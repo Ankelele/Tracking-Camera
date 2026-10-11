@@ -1,12 +1,14 @@
 import cv2
 import numpy as np
+import time
+from ultralytics import YOLOWorld
 
 # ---------- settings ----------
 H_TOL = 10                # hue tolerance: H ± 10
 SV_TOL = 70               # how much below the selected point we set S min and V min
 PATCH = 5                 # radius of the square around the click (5 -> 11x11 pixels)
 BTN = (460, 10, 620, 50)  # button on the image: x1, y1, x2, y2
-# --------------------------------
+# --------------------------------I
 
 cap = cv2.VideoCapture(0, cv2.CAP_V4L2)   # camera index
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
