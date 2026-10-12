@@ -1,23 +1,74 @@
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+.Python
+
+# Packaging and build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+.eggs/
 
 # Virtual environments
 venv/
 .venv/
 env/
+ENV/
+env.bak/
+venv.bak/
 
 # Environment variables and secrets
 .env
 .env.*
+!.env.example
+
+# Test, coverage, and type-checker caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.mypy_cache/
+.pyre/
+.hypothesis/
+.ruff_cache/
 
 # IDE and editor settings
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS files
 Thumbs.db
 .DS_Store
+Desktop.ini
 
 # Logs
 *.log
+
+# Local model weights and generated inference artifacts
+*.pt
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+*.safetensors
+runs/
+wandb/
+
+# Local data and media generated during camera testing
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.webp
+
+# Jupyter
+.ipynb_checkpoints/
