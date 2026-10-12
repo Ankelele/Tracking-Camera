@@ -1,3 +1,4 @@
+# Direct dependencies for track_object_YOLO_win.py
 numpy
 opencv-python
 ultralytics
