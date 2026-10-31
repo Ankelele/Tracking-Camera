@@ -11,9 +11,6 @@
 import sys
 import cv2
 import numpy as np
-import os
-import time
-from ultralytics import YOLOWorld
 
 # ---------- settings ----------
 H_TOL = 10  # hue tolerance: H ± 10
@@ -24,7 +21,7 @@ MODEL_NAME = "yolov8s-worldv2.pt"  # нейросеть, которая ищет
 CONF = 0.15  # порог уверенности нейросети: ниже -> находит больше, но чаще ошибается
 IMGSZ = 640  # размер кадра для нейросети; на Raspberry Pi можно 416 или 320: быстрее, но хуже видит мелкие предметы
 CAMERA_INDEX = 0
-# --------------------------------I
+# --------------------------------
 
 
 def open_camera(index):
@@ -82,7 +79,7 @@ def on_mouse(event, x, y, flags, param):
             click = (x, y)  # click on the image: handle in the loop
 
 
-def ser_color(h, s, v):
+def set_color(h, s, v):
     """Двигает ползунки под выбранный цвет (одинаково для клика и для нейросети)."""
     global picked
     picked = (h, s, v)
@@ -130,7 +127,7 @@ def color_from_box(hsv, box):
     same = colored & (np.abs(off) <= H_TOL)
     return h, int(np.median(ss[same])), int(np.median(vv[same]))
 
-def find_by_text(promt, frame, hsv):
+def find_by_text(prompt, frame, hsv):
     """Нейросеть ищет объект по тексту, мы берём  цвет и двигаем ползунки.
     Возвращает короткое сообщение для экрана."""
     global model, current_search, det_box, det_ttl
@@ -139,9 +136,9 @@ def find_by_text(promt, frame, hsv):
             from ultralytics import YOLOWorld
             print(f"Loading YOLO model {MODEL_NAME}...")
             model = YOLOWorld(MODEL_NAME)
-        if promt != current_search:
-            model.set_classes([promt])
-            current_search = promt
+        if prompt != current_search:
+            model.set_classes([prompt])
+            current_search = prompt
         res = model.predict(frame, imgsz=IMGSZ, conf=CONF, verbose=False)[0]
     except ImportError as e:
         print("Не хватает библиотеки:", e)
@@ -153,7 +150,7 @@ def find_by_text(promt, frame, hsv):
         return "YOLO error, see console"
 
     if len(res.boxes) == 0:
-        return f'"{promt}" not found'
+        return f'"{prompt}" not found'
 
     best = int(res.boxes.conf.argmax()) # рамка с наибольшей уверенностью
     conf = float(res.boxes.conf[best]) # уверенность
@@ -165,8 +162,8 @@ def find_by_text(promt, frame, hsv):
     color = color_from_box(hsv, box)
     if color is None:
         return "found, but it has no color (gray/white/black)"
-    ser_color(*color)
-    return f'found "{promt}" (conf={conf:.2f})'
+    set_color(*color)
+    return f'found "{prompt}" (conf={conf:.2f})'
 
 
 cv2.namedWindow("camera")
@@ -200,18 +197,7 @@ while True:
             max(0, y - PATCH) : y + PATCH + 1, max(0, x - PATCH) : x + PATCH + 1
         ]
         h, s, v = [int(c) for c in np.median(patch.reshape(-1, 3), axis=0)]
-        picked = (h, s, v)
-
-        cv2.setTrackbarPos("H min", "mask", (h - H_TOL) % 180)
-        cv2.setTrackbarPos("H max", "mask", (h + H_TOL) % 180)
-        cv2.setTrackbarPos("S min", "mask", max(0, s - SV_TOL))
-        cv2.setTrackbarPos("V min", "mask", max(0, v - SV_TOL))
-
-        print(f"Selected: H={h}, S={s}, V={v}")
-        if s < 40:
-            print(
-                "Warning: the color is almost gray/white/black, so H is unreliable here"
-            )
+        set_color(h, s, v)
 
     h_min = cv2.getTrackbarPos("H min", "mask")
     h_max = cv2.getTrackbarPos("H max", "mask")
@@ -338,7 +324,7 @@ while True:
         if key == 13:
             typing = False
             if text.strip():
-                cv2.putText(view, "searching...", (center_x - 70, center_y +-300), 
+                cv2.putText(view, "searching...", (center_x - 70, center_y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
                 cv2.imshow("camera", view)
                 cv2.waitKey(1)
@@ -353,7 +339,7 @@ while True:
     elif key == ord("t"):
         typing = True
         text = ""
-    elif key == ord("p"):
+    elif key == ord("q"):
         break  # exit the loop and close the program
 
 cap.release()
